@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include honda_api *.css
+recursive-include honda_api *.csv
+recursive-include honda_api *.html
+recursive-include honda_api *.ico
+recursive-include honda_api *.js
+recursive-include honda_api *.json
+recursive-include honda_api *.md
+recursive-include honda_api *.png
+recursive-include honda_api *.py
+recursive-include honda_api *.svg
+recursive-include honda_api *.txt
+recursive-exclude honda_api *.pyc
