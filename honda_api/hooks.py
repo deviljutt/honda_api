@@ -1,4 +1,7 @@
+import frappe
 from . import __version__ as app_version
+from frappe.utils import now
+
 
 app_name = "honda_api"
 app_title = "Honda Api"
@@ -7,9 +10,16 @@ app_description = "Honda API"
 app_email = "itsgoraya@gmail.com"
 app_license = "MIT"
 
-# Includes in <head>
-# ------------------
 
+
+doc_events = {
+    "User": {
+        "on_update": "honda_api.api_calls.handleuser.handleusersave"
+    }
+}
+
+
+    
 # include js, css files in header of desk.html
 # app_include_css = "/assets/honda_api/css/honda_api.css"
 # app_include_js = "/assets/honda_api/js/honda_api.js"
@@ -22,11 +32,11 @@ app_license = "MIT"
 # website_theme_scss = "honda_api/public/scss/website"
 
 # include js, css files in header of web form
-# webform_include_js = {"doctype": "public/js/doctype.js"}
+
 # webform_include_css = {"doctype": "public/css/doctype.css"}
 
 # include js in page
-# page_js = {"page" : "public/js/file.js"}
+#page_js = {"page" : "/honda_api/honda_api/public/js/custom.js"}
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
@@ -138,6 +148,14 @@ app_license = "MIT"
 
 # Overriding Methods
 # ------------------------------
+
+override_whitelisted_methods = {
+	"frappe.www.login.login_via_line": "honda_api.api_calls.linehandle.login_via_line",
+}
+
+
+
+
 #
 # override_whitelisted_methods = {
 #	"frappe.desk.doctype.event.event.get_events": "honda_api.event.get_events"
@@ -199,3 +217,6 @@ app_license = "MIT"
 # auth_hooks = [
 #	"honda_api.auth.validate"
 # ]
+
+fixtures = ["Custom Field"]
+

@@ -1,0 +1,19 @@
+{
+ "content": null,
+ "creation": "2023-08-05 21:49:20.064487",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2023-08-05 21:49:20.064487",
+ "modified_by": "Administrator",
+ "module": "Honda Api",
+ "name": "user_update",
+ "owner": "Administrator",
+ "page_name": "user_update",
+ "roles": [],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "User Update"
+}
