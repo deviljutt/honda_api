@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import json
 from datetime import timedelta, date
 from datetime import datetime
+from frappe.utils import nowdate, nowtime, cint
 
 
 @frappe.whitelist(allow_guest=True)
@@ -12,11 +13,21 @@ def feachorders():
 
         current_date = datetime.now().date()
         formatted_date = current_date.strftime("%Y-%m-%d")
+
+        current_date = datetime.now().date()
+        previous_date = current_date - timedelta(days=1)
+        formatted_date = previous_date.strftime("%Y-%m-%d")
+
+
+
         uri = 'http://171.103.6.198:8484/LoyaltyHondanont.aspx?rEbUM02=dW5pY29ybg==&rEbUM03=SEBuZGExMjM=&rEbUM01=' + formatted_date
         response = requests.get(uri)  # Send a GET request and get the response
         site_response = str(response.content)
         soup = BeautifulSoup(site_response, 'html.parser')
         specific_element = soup.find('span', id='txtJson')
+
+        
+        
         if specific_element:
             specific_content = specific_element.get_text();
             decoded_bytes = base64.b64decode(specific_content)
@@ -24,8 +35,10 @@ def feachorders():
             data  = json.loads(decoded_string)
 
             end_date = date.today() + timedelta(days=10)
+            
 
 
+        
             for item in data:
                 invoiceno = item["INVOICE_NO"].replace(" ", "")
                 prev_order = frappe.db.exists({"doctype": "Sales Invoice", "invoice_no": invoiceno})
@@ -47,10 +60,6 @@ def feachorders():
                         item_code = str(item["INVOICE_TYPE"])
                         price = abs(item["TOTAL_AMT"])
 
-                        new_order.base_grand_total=price
-                        new_order.grand_total=price
-                        new_order.total=price
-                        new_order.net_total=price
 
                         Itemz = frappe.db.exists("Item", item_code)
                         if( Itemz == None ):
@@ -66,7 +75,7 @@ def feachorders():
 
                         customer_flag = frappe.db.exists({"doctype": "Customer", "phone": item["MOBILE_NO"]})
                         if( customer_flag == None ):
-                               _create_customer(item["MOBILE_NO"])    
+                               _create_customer(item["MOBILE_NO"],item["LICENSE_NO"],item["ENGINE_NO"],item["FRAME_NO"])    
                                customer_flag = frappe.db.exists({"doctype": "Customer", "phone": item["MOBILE_NO"]})
 
 
@@ -94,7 +103,37 @@ def feachorders():
 				ignore_mandatory=True 
 			)
                         new_order.submit()
-                        
+
+                      
+
+
+ 
+def _make_payment_entry(si, mode_of_payment, paid_amount):
+    pe = frappe.new_doc('Payment Entry')
+    pe.update({
+        'payment_type': 'Receive',
+        'posting_date': nowdate(),
+        'posting_time': nowtime(),
+        'company': si.company,
+        'mode_of_payment': mode_of_payment,
+        'paid_amount': paid_amount,
+        'received_amount': paid_amount,
+        'allocate_payment_amount': 1,
+        'party_type': 'Customer',
+        'party': si.customer,
+        'paid_from': si.debit_to,
+        'paid_to': 'Cash - D'
+    })
+    ff = pe.append('references', {
+        'reference_doctype': "Sales Invoice",
+        'reference_name': si.name
+    })
+    return pe
+           
+
+
+   
+
 
 def _create_product(item_name,item_code):
         Item = frappe.new_doc('Item')
@@ -108,11 +147,14 @@ def _create_product(item_name,item_code):
                 )
         return
 
-def _create_customer(customer_name):
+def _create_customer(customer_name,licensno,enginno,frameno):
         new_customer = frappe.new_doc('Customer')
         new_customer.customer_name=customer_name
         new_customer.territory="Thailand"
         new_customer.phone=customer_name
+        new_customer.license_no=licensno
+        new_customer.engine_no=enginno
+        new_customer.frame_no=frameno
         new_customer.insert(
                 ignore_permissions=True, # ignore write permissions during insert
                 ignore_links=True, # ignore Link validation in the document

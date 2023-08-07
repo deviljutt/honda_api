@@ -28,5 +28,3 @@ def handleusersave(doc, event):
                             "link_title": customer.name,
                     })
                     contacts.save()
-                    converted_string = str(contacts)
-                    frappe.throw(converted_string)
